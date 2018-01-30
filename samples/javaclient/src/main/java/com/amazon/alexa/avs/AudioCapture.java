@@ -33,6 +33,8 @@ public class AudioCapture {
 
     private int BUFFER_SIZE_IN_BYTES;
 
+    private int FRAME_SIZE_IN_BYTES;
+
     private static final Logger log = LoggerFactory.getLogger(AudioCapture.class);
 
     public static AudioCapture getAudioHardware(final AudioFormat audioFormat,
@@ -55,6 +57,7 @@ public class AudioCapture {
         }
         BUFFER_SIZE_IN_BYTES = (int) ((audioFormat.getSampleSizeInBits() * audioFormat.getSampleRate()) / 8
                 * BUFFER_SIZE_IN_SECONDS);
+	FRAME_SIZE_IN_BYTES = audioFormat.getFrameSize();
     }
 
     public InputStream getAudioInputStream(final RecordingStateListener stateListener,
@@ -106,7 +109,8 @@ public class AudioCapture {
         }
 
         private void copyAudioBytesFromInputToOutput() {
-            byte[] data = new byte[microphoneLine.getBufferSize() / 5];
+	    int size = ( ( microphoneLine.getBufferSize() / 5 )/FRAME_SIZE_IN_BYTES )*FRAME_SIZE_IN_BYTES;
+            byte[] data = new byte[size];
             int numBytesRead = microphoneLine.read(data, 0, data.length);
             try {
                 audioStateOutputStream.write(data, 0, numBytesRead);
